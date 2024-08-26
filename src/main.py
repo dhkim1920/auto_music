@@ -12,7 +12,7 @@ if getattr(sys, 'frozen', False):
 else:
     application_path = os.path.dirname(os.path.abspath(__file__))
 
-settings_file = os.path.join(application_path, "coordinates.json")
+settings_file = os.path.join(application_path, "../coordinates.json")
 
 
 def save_coordinates():
@@ -114,12 +114,16 @@ def create_gui():
     root = tk.Tk()
     root.title("Auto Clicker")
 
+    # Set default font (specific for macOS)
+    default_font = ("Helvetica", 14)
+    root.option_add("*Font", default_font)
+
     tk.Label(root, text="X 좌표:").grid(row=0, column=0)
-    x_entry = tk.Entry(root)
+    x_entry = tk.Entry(root, font=default_font)
     x_entry.grid(row=0, column=1)
 
     tk.Label(root, text="Y 좌표:").grid(row=1, column=0)
-    y_entry = tk.Entry(root)
+    y_entry = tk.Entry(root, font=default_font)
     y_entry.grid(row=1, column=1)
 
     tk.Label(root, text="클릭 설정:").grid(row=2, column=0)
