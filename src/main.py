@@ -1,4 +1,6 @@
 import sys
+import threading
+import time
 import tkinter as tk
 from tkinter import messagebox
 import pyautogui
@@ -62,6 +64,7 @@ def on_click(x=None, y=None, click_type=None):
         x = int(x_entry.get())
         y = int(y_entry.get())
         click_type = click_type_var.get()
+    time.sleep(0.1)
     perform_click(x, y, click_type)
 
 
@@ -103,6 +106,19 @@ def save_mouse_position_by_hotkey():
         y_entry.insert(0, y)
 
 
+def on_focus(event):
+    # When the window is focused, start listening for the hotkey
+    hotkey_listener = threading.Thread(target=listen_for_hotkey, daemon=True)
+    hotkey_listener.start()
+    print("App is focused. Hotkey enabled.")
+
+
+def on_focus_lost(event):
+    # When the window loses focus, stop listening for the hotkey
+    keyboard.unhook_all_hotkeys()
+    print("App is unfocused. Hotkey disabled.")
+
+
 def listen_for_hotkey():
     if root.focus_get():
         keyboard.add_hotkey('ctrl+s', save_mouse_position_by_hotkey)
@@ -114,16 +130,12 @@ def create_gui():
     root = tk.Tk()
     root.title("Auto Clicker")
 
-    # Set default font (specific for macOS)
-    default_font = ("Helvetica", 14)
-    root.option_add("*Font", default_font)
-
     tk.Label(root, text="X 좌표:").grid(row=0, column=0)
-    x_entry = tk.Entry(root, font=default_font)
+    x_entry = tk.Entry(root)
     x_entry.grid(row=0, column=1)
 
     tk.Label(root, text="Y 좌표:").grid(row=1, column=0)
-    y_entry = tk.Entry(root, font=default_font)
+    y_entry = tk.Entry(root)
     y_entry.grid(row=1, column=1)
 
     tk.Label(root, text="클릭 설정:").grid(row=2, column=0)
@@ -147,7 +159,6 @@ def create_gui():
         click_type_var.set(coordinates["click_type"])
 
     update_mouse_position()
-    listen_for_hotkey()
 
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -163,4 +174,7 @@ if __name__ == "__main__":
             on_click(x=coordinates["x"], y=coordinates["y"], click_type=coordinates["click_type"])
     else:
         root = create_gui()
+
+        root.bind("<FocusIn>", on_focus)
+        root.bind("<FocusOut>", on_focus_lost)
         root.mainloop()

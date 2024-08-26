@@ -2,3 +2,4 @@ build
 venv
 *.spec
 .idea
+*.exe
