@@ -47,9 +47,11 @@ def load_coordinates():
 
 def perform_click(x, y, click_type):
     pyautogui.moveTo(x, y)
-    if click_type == "클릭":
+    time.sleep(0.1)
+    pydirectinput.click()
+    if click_type == "Click":
         pydirectinput.click()
-    elif click_type == "더블 클릭":
+    elif click_type == "DoubleClick":
         pydirectinput.doubleClick()
 
 
@@ -65,7 +67,6 @@ def on_click(x=None, y=None, click_type=None):
         x = int(x_entry.get())
         y = int(y_entry.get())
         click_type = click_type_var.get()
-    time.sleep(0.1)
     perform_click(x, y, click_type)
 
 
