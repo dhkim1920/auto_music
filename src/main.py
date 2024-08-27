@@ -1,3 +1,4 @@
+import ctypes
 import sys
 import threading
 import time
@@ -150,7 +151,10 @@ def create_gui():
     click_button.grid(row=5, column=0, columnspan=2)
 
     save_button = tk.Button(root, text="Save", command=save_coordinates)
-    save_button.grid(row=5, column=2, columnspan=2)
+    save_button.grid(row=5, column=1, columnspan=2)
+
+    admin_button = tk.Button(root, text="Re-run as Admin", command=lambda: rerun_as_admin(root))
+    admin_button.grid(row=5, column=3, columnspan=3)
 
     coordinates = load_coordinates()
     if coordinates:
@@ -165,16 +169,29 @@ def create_gui():
     return root
 
 
-if __name__ == "__main__":
-    args = handle_cli_args()
-
-    if args.auto_click:
-        coordinates = load_coordinates()
-        if coordinates:
-            on_click(x=coordinates["x"], y=coordinates["y"], click_type=coordinates["click_type"])
+def run_as_admin():
+    if ctypes.windll.shell32.IsUserAnAdmin():
+        print("이미 관리자 권한입니다.")
+        return True
     else:
+        print("관리자 권한으로 재실행합니다.")
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        return False
+
+
+def rerun_as_admin(root):
+    root.destroy()
+    if run_as_admin():
         root = create_gui()
 
         root.bind("<FocusIn>", on_focus)
         root.bind("<FocusOut>", on_focus_lost)
         root.mainloop()
+
+
+if __name__ == "__main__":
+    root = create_gui()
+
+    root.bind("<FocusIn>", on_focus)
+    root.bind("<FocusOut>", on_focus_lost)
+    root.mainloop()
