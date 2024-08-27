@@ -8,6 +8,7 @@ import json
 import os
 import argparse
 import keyboard
+import pydirectinput
 
 if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
@@ -47,9 +48,9 @@ def load_coordinates():
 def perform_click(x, y, click_type):
     pyautogui.moveTo(x, y)
     if click_type == "클릭":
-        pyautogui.click()
+        pydirectinput.click()
     elif click_type == "더블 클릭":
-        pyautogui.doubleClick()
+        pydirectinput.doubleClick()
 
 
 def update_mouse_position():
