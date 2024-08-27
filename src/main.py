@@ -109,14 +109,12 @@ def save_mouse_position_by_hotkey():
 
 
 def on_focus(event):
-    # When the window is focused, start listening for the hotkey
     hotkey_listener = threading.Thread(target=listen_for_hotkey, daemon=True)
     hotkey_listener.start()
     print("App is focused. Hotkey enabled.")
 
 
 def on_focus_lost(event):
-    # When the window loses focus, stop listening for the hotkey
     keyboard.unhook_all_hotkeys()
     print("App is unfocused. Hotkey disabled.")
 
