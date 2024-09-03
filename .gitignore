@@ -3,3 +3,4 @@ venv
 *.spec
 .idea
 *.exe
+*.pyc
