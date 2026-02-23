@@ -4,3 +4,4 @@ venv
 .idea
 *.exe
 *.pyc
+*.json

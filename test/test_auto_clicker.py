@@ -1,62 +1,42 @@
-import unittest
-from unittest.mock import patch, mock_open
-import tkinter as tk
-import json
+﻿from datetime import date
+from pathlib import Path
 
-from src.main import create_gui, on_click, settings_file
+from src.utils import AppSettings, PixelConfig, ScheduleStore, load_settings, save_settings
 
 
-class TestAutoClicker(unittest.TestCase):
-    def setUp(self):
-        self.root = tk.Tk()
-        self.gui = create_gui()
-        self.root.update()
+def test_settings_roundtrip(tmp_path: Path):
+    settings_file = tmp_path / "settings.json"
+    settings = AppSettings(
+        youtube_music_path="C:/Program Files/YouTube Music/ytmusic.exe",
+        retry_count=3,
+        play_button_x=100,
+        play_button_y=200,
+        login_pixel=PixelConfig(x=1, y=2, r=3, g=4, b=5, tolerance=8, enabled=True),
+        play_verify_pixel=PixelConfig(x=10, y=20, r=30, g=40, b=50, tolerance=5, enabled=True),
+        logging_enabled=True,
+        log_file_path=str(tmp_path / "app.log"),
+        notify_success=True,
+        notify_failure=False,
+        kakao_api_key_file=str(tmp_path / "key.txt"),
+    )
 
-    def tearDown(self):
-        self.root.destroy()
+    save_settings(settings, settings_file)
+    loaded = load_settings(settings_file)
 
-    # @patch("builtins.open", new_callable=mock_open)
-    # @patch("os.path.exists", return_value=True)
-    # def test_load_coordinates(self, mock_file):
-    #     mock_file.return_value.read.return_value = json.dumps({"x": 100, "y": 200, "click_type": "Click"})
-    #
-    #     data = load_coordinates()
-    #     self.assertEqual(data["x"], 100)
-    #     self.assertEqual(data["y"], 200)
-    #     self.assertEqual(data["click_type"], "Click")
-    #
-    # @patch("builtins.open", new_callable=mock_open)
-    # def test_save_coordinates(self, mock_file):
-    #     x_entry = self.gui.children['!entry']
-    #     y_entry = self.gui.children['!entry2']
-    #     x_entry.insert(0, '300')
-    #     y_entry.insert(0, '400')
-    #
-    #     click_type_var = self.gui.children['!radiobutton'].cget('variable')
-    #     click_type_var.set('DoubleClick')
-    #
-    #     save_coordinates()
-    #
-    #     mock_file.assert_called_once_with(settings_file, 'w')
-    #     handle = mock_file()
-    #     handle.write.assert_called_once_with(json.dumps({"x": 300, "y": 400, "click_type": "DoubleClick"}))
-    #
-    # @patch("pyautogui.click")
-    # @patch("pyautogui.moveTo")
-    # def test_on_click(self, mock_move, mock_click):
-    #     # Set entries in the GUI
-    #     x_entry = self.gui.children['!entry']
-    #     y_entry = self.gui.children['!entry2']
-    #     x_entry.insert(0, '500')
-    #     y_entry.insert(0, '600')
-    #
-    #     click_type_var = self.gui.children['!radiobutton'].cget('variable')
-    #     click_type_var.set('Click')
-    #
-    #     on_click()
-    #     mock_move.assert_called_once_with(500, 600)
-    #     mock_click.assert_called_once()
+    assert loaded.youtube_music_path == settings.youtube_music_path
+    assert loaded.retry_count == 3
+    assert loaded.login_pixel.enabled is True
+    assert loaded.play_verify_pixel.r == 30
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_schedule_store_set_get(tmp_path: Path):
+    schedule_file = tmp_path / "schedules.json"
+    store = ScheduleStore(schedule_file)
+
+    target = date(2026, 1, 15)
+    store.set_value(target, "08:30")
+    store.save()
+
+    reloaded = ScheduleStore(schedule_file)
+    assert reloaded.get_value(target) == "08:30"
+    assert reloaded.get_value(date(2026, 1, 16)) == "OFF"
